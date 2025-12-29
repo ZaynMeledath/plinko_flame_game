@@ -1,0 +1,22 @@
+name: plinko_flame_game
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  audioplayers: ^6.5.1
+  flame_forge2d: ^0.19.2+2
+  flame: ^1.34.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
