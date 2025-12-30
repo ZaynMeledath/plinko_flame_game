@@ -24,7 +24,6 @@ class PlinkoBloc extends Bloc<PlinkoEvent, PlinkoState> {
           betAmount: state.betAmount,
         ),
       );
-      await Future.delayed(const Duration(seconds: 3));
       final points = (state.points + state.betAmount * event.multiplier)
           .toInt();
       return emit(

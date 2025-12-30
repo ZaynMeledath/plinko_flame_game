@@ -1,9 +1,11 @@
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:plinko_flame_game/bloc/plinko_bloc.dart';
+import 'package:plinko_flame_game/components/star_field.dart';
 import 'package:plinko_flame_game/plinko_game.dart';
 import 'package:plinko_flame_game/src/plinko_configs.dart';
 import 'package:plinko_flame_game/utils/screen_size.dart';
@@ -80,7 +82,18 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
                 child: SizedBox(
                   width: PlinkoConfigs.gameWidth,
                   height: PlinkoConfigs.gameHeight,
-                  child: GameWidget(game: game),
+                  child: GameWidget(
+                    game: game,
+                    backgroundBuilder: (context) => Stack(
+                      children: [
+                        StarField(),
+                        BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                          child: SizedBox(),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               Spacer(),
@@ -94,7 +107,7 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
 
   Widget _buildActionsContainer() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 24.w(), vertical: 8.h()),
+      margin: EdgeInsets.symmetric(horizontal: 24.w(), vertical: 6.h()),
       decoration: BoxDecoration(
         color: const Color(0xFF1a2c38),
         borderRadius: BorderRadius.circular(12),
@@ -131,7 +144,7 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
               ),
             ],
           ),
-          SizedBox(height: 18.w()),
+          SizedBox(height: 16.w()),
 
           // Balance
           Container(
@@ -210,7 +223,7 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
                 ),
                 child: Text(
                   state is PlinkoPlayingState
-                      ? '...'
+                      ? 'Playing...'
                       : state is PlinkoScoreCalculatingState
                       ? 'Calculating Score'
                       : 'BET',

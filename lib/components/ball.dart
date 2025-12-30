@@ -24,9 +24,9 @@ class Ball extends BodyComponent<PlinkoGame> {
     final shape = CircleShape()..radius = PlinkoConfigs.ballRadius;
     final fixtureDef = FixtureDef(
       shape,
-      restitution: 0.5,
-      friction: 0.2,
-      density: 20,
+      restitution: 0.54,
+      friction: 0.25,
+      density: 15,
     );
 
     return world.createBody(bodyDef)..createFixture(fixtureDef);

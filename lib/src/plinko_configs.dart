@@ -8,7 +8,7 @@ class PlinkoConfigs {
   static double pegRadius = 7;
   static double pegGap = 24;
   static Vector2 sensorSize = Vector2(40, 20);
-  static double sensorGap = 10;
+  static double sensorGap = 8;
 
   static void init() {
     gameWidth = screenSize.width * .94;
@@ -16,7 +16,7 @@ class PlinkoConfigs {
     ballRadius = 9.w();
     pegRadius = 7.w();
     pegGap = 24.w();
-    sensorSize = Vector2(40.w(), 20.w());
-    sensorGap = 10.w();
+    sensorSize = Vector2(38.w(), 20.w());
+    sensorGap = 8.w();
   }
 }

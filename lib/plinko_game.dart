@@ -12,7 +12,7 @@ import 'package:plinko_flame_game/utils/screen_size.dart';
 
 class PlinkoGame extends Forge2DGame {
   final rowCount = 8;
-  final List<double> multipliers = [10.0, 2.5, 1.2, .8, 0.5, 1.2, 2.5, 10.0];
+  final List<double> multipliers = [8.0, 2.5, 1.2, .5, 0.5, 1.2, 2.5, 8.0];
   final List<Color> colors = [
     Colors.green,
     Colors.lightGreen,
@@ -24,7 +24,7 @@ class PlinkoGame extends Forge2DGame {
     Colors.green,
   ];
 
-  PlinkoGame() : super(gravity: Vector2(0, 500));
+  PlinkoGame() : super(gravity: Vector2(0, 600));
 
   @override
   void onLoad() {
