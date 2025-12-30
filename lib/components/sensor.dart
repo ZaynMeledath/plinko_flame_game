@@ -5,6 +5,7 @@ import 'package:plinko_flame_game/bloc/plinko_bloc.dart';
 import 'package:plinko_flame_game/components/ball.dart';
 import 'package:plinko_flame_game/plinko_game.dart';
 import 'package:plinko_flame_game/src/plinko_configs.dart';
+import 'package:plinko_flame_game/utils/plinko_audio.dart';
 import 'package:plinko_flame_game/utils/screen_size.dart';
 
 class Sensor extends BodyComponent<PlinkoGame> with ContactCallbacks {
@@ -78,6 +79,7 @@ class Sensor extends BodyComponent<PlinkoGame> with ContactCallbacks {
   @override
   void beginContact(Object other, Contact contact) {
     if (other is Ball) {
+      PlinkoAudio().playWinSfx();
       plinkoBloc.add(PlinkoWinEvent(multiplier: multiplier));
       other.removeFromParent();
     }

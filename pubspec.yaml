@@ -13,6 +13,7 @@ dependencies:
   flame_forge2d: ^0.19.2+2
   flame: ^1.34.0
   flutter_bloc: ^9.1.1
+  flame_audio: ^2.11.12
 
 dev_dependencies:
   flutter_test:
@@ -21,3 +22,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/audio/sfx/
