@@ -1,6 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flutter/material.dart';
+import 'package:plinko_flame_game/bloc/plinko_bloc.dart';
 import 'package:plinko_flame_game/components/ball.dart';
 import 'package:plinko_flame_game/plinko_game.dart';
 import 'package:plinko_flame_game/src/plinko_configs.dart';
@@ -9,20 +10,25 @@ import 'package:plinko_flame_game/utils/screen_size.dart';
 class Sensor extends BodyComponent<PlinkoGame> with ContactCallbacks {
   final double sensorPositionX;
   final double multiplier;
+  final Color color;
 
-  Sensor({required this.sensorPositionX, required this.multiplier});
+  Sensor({
+    required this.sensorPositionX,
+    required this.multiplier,
+    required this.color,
+  });
 
   final double sensorWidth = PlinkoConfigs.sensorSize.x;
   final double sensorHeight = PlinkoConfigs.sensorSize.y;
 
-  final sensorPaint = Paint()..color = Colors.red;
+  late final Paint sensorPaint;
 
   late TextComponent label;
 
   @override
   Future<void> onLoad() async {
     super.onLoad();
-
+    sensorPaint = Paint()..color = color;
     label = TextComponent(
       text: multiplier.toString(),
       textRenderer: TextPaint(
@@ -72,7 +78,7 @@ class Sensor extends BodyComponent<PlinkoGame> with ContactCallbacks {
   @override
   void beginContact(Object other, Contact contact) {
     if (other is Ball) {
-      //TODO: Handle Win
+      plinkoBloc.add(PlinkoWinEvent(multiplier: multiplier));
       other.removeFromParent();
     }
   }

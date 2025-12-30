@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:plinko_flame_game/bloc/plinko_bloc.dart';
 import 'package:plinko_flame_game/plinko_game.dart';
 import 'package:plinko_flame_game/src/plinko_configs.dart';
 import 'package:plinko_flame_game/utils/screen_size.dart';
@@ -14,9 +16,8 @@ class PlinkoGameScreen extends StatefulWidget {
 }
 
 class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
-  bool audioEnabled = true;
-  double betAmount = 50;
-  double balance = 1000;
+  ValueNotifier<bool> audioEnabledListenable = ValueNotifier(true);
+  final ValueNotifier<int> betAmountListenable = ValueNotifier(50);
   late final PlinkoGame game;
 
   @override
@@ -26,25 +27,65 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
     super.initState();
   }
 
+  void showOverlay(double multiplier) async {
+    final overlayEntry = OverlayEntry(
+      builder: (_) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(height: PlinkoConfigs.gameHeight * 0.55),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: multiplier < 1 ? Colors.red : Colors.green,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: DefaultTextStyle(
+                style: TextStyle(
+                  fontSize: 60.w(),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                child: Text('${multiplier}x'),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    Overlay.of(context).insert(overlayEntry);
+
+    await Future.delayed(const Duration(milliseconds: 2000));
+    overlayEntry.remove();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFF0f212e),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: SizedBox(
-                width: PlinkoConfigs.gameWidth,
-                height: PlinkoConfigs.gameHeight,
-                child: GameWidget(game: game),
+      body: BlocListener<PlinkoBloc, PlinkoState>(
+        listener: (context, state) {
+          if (state is PlinkoScoreCalculatingState) {
+            showOverlay(state.multiplier);
+          }
+        },
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: SizedBox(
+                  width: PlinkoConfigs.gameWidth,
+                  height: PlinkoConfigs.gameHeight,
+                  child: GameWidget(game: game),
+                ),
               ),
-            ),
-            Spacer(),
-            _buildActionsContainer(),
-          ],
+              Spacer(),
+              _buildActionsContainer(),
+            ],
+          ),
         ),
       ),
     );
@@ -66,8 +107,8 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
           Row(
             children: [
               Container(
-                width: 30.w(),
-                height: 30.w(),
+                width: 32.w(),
+                height: 32.w(),
                 decoration: BoxDecoration(
                   color: const Color(0xFF10b981),
                   borderRadius: BorderRadius.circular(8),
@@ -75,14 +116,14 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
                 child: Icon(
                   Icons.trending_up,
                   color: Colors.white,
-                  size: 20.w(),
+                  size: 22.w(),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w()),
               Text(
                 'Plinko',
                 style: TextStyle(
-                  fontSize: 24.w(),
+                  fontSize: 26.w(),
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -112,14 +153,18 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
                   ),
                 ),
                 SizedBox(height: 6.h()),
-                Text(
-                  '${balance.toInt()}',
-                  style: TextStyle(
-                    fontSize: 28.w(),
-                    fontFamily: 'monospace',
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                BlocBuilder<PlinkoBloc, PlinkoState>(
+                  builder: (context, state) {
+                    return Text(
+                      '${state.points}',
+                      style: TextStyle(
+                        fontSize: 28.w(),
+                        fontFamily: 'monospace',
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -127,30 +172,55 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
           SizedBox(height: 18.h()),
 
           // Bet Amount
-          _buildInputField(
-            label: 'BET AMOUNT',
-            value: betAmount,
-            onChanged: (v) => setState(() => betAmount = math.max(0, v)),
+          ValueListenableBuilder(
+            valueListenable: betAmountListenable,
+            builder: (context, betAmount, child) {
+              return _buildInputField(
+                label: 'BET AMOUNT',
+                value: betAmount,
+                onChanged: (value) =>
+                    betAmountListenable.value = math.max(0, value),
+              );
+            },
           ),
 
           SizedBox(height: 38.h()),
 
           // Bet Button
-          ElevatedButton(
-            onPressed: balance >= betAmount ? game.dropBall : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10b981),
-              foregroundColor: const Color(0xFF0f212e),
-              padding: EdgeInsets.symmetric(vertical: 16.w()),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              elevation: 4,
-            ),
-            child: Text(
-              'BET',
-              style: TextStyle(fontSize: 18.w(), fontWeight: FontWeight.bold),
-            ),
+          BlocBuilder<PlinkoBloc, PlinkoState>(
+            builder: (context, state) {
+              return ElevatedButton(
+                onPressed: () {
+                  if (state.points < betAmountListenable.value ||
+                      state is! PlinkoLoadedState) {
+                    return;
+                  }
+                  game.dropBall(betAmount: betAmountListenable.value);
+                },
+
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10b981),
+                  foregroundColor: const Color(0xFF0f212e),
+                  padding: EdgeInsets.symmetric(vertical: 16.w()),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  elevation: 4,
+                ),
+                child: Text(
+                  state is PlinkoPlayingState
+                      ? '...'
+                      : state is PlinkoScoreCalculatingState
+                      ? 'Calculating Score'
+                      : 'BET',
+                  style: TextStyle(
+                    fontSize: 18.w(),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              );
+            },
           ),
           SizedBox(height: 16.h()),
 
@@ -158,10 +228,16 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
           Align(
             alignment: Alignment.centerLeft,
             child: GestureDetector(
-              onTap: () => setState(() => audioEnabled = !audioEnabled),
-              child: Icon(
-                audioEnabled ? Icons.volume_up : Icons.volume_off,
-                color: Colors.grey[400],
+              onTap: () =>
+                  audioEnabledListenable.value = !audioEnabledListenable.value,
+              child: ValueListenableBuilder(
+                valueListenable: audioEnabledListenable,
+                builder: (context, audioEnabled, child) {
+                  return Icon(
+                    audioEnabled ? Icons.volume_up : Icons.volume_off,
+                    color: Colors.grey[400],
+                  );
+                },
               ),
             ),
           ),
@@ -172,8 +248,8 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
 
   Widget _buildInputField({
     required String label,
-    required double value,
-    required Function(double) onChanged,
+    required int value,
+    required Function(int) onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,7 +263,7 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
             letterSpacing: 1.2,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h()),
         Row(
           children: [
             Expanded(
@@ -208,7 +284,6 @@ class _PlinkoGameScreenState extends State<PlinkoGameScreen> {
                     vertical: 8.h(),
                   ),
                 ),
-                onChanged: (v) => onChanged(double.tryParse(v) ?? value),
               ),
             ),
             SizedBox(width: 8.w()),

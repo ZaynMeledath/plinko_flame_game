@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flame_forge2d/flame_forge2d.dart';
+import 'package:plinko_flame_game/bloc/plinko_bloc.dart';
 import 'package:plinko_flame_game/plinko_game.dart';
 import 'package:plinko_flame_game/src/plinko_configs.dart';
 
@@ -34,6 +35,7 @@ class Ball extends BodyComponent<PlinkoGame> {
   @override
   void update(double dt) {
     if (position.y > PlinkoConfigs.gameHeight) {
+      plinkoBloc.add(PlinkoWinEvent(multiplier: 0));
       game.remove(this);
     }
     super.update(dt);

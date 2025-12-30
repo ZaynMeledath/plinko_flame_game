@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flame/camera.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
+import 'package:flutter/material.dart' show Colors, Color;
+import 'package:plinko_flame_game/bloc/plinko_bloc.dart';
 import 'package:plinko_flame_game/components/ball.dart';
 import 'package:plinko_flame_game/components/peg.dart';
 import 'package:plinko_flame_game/components/sensor.dart';
@@ -11,6 +13,16 @@ import 'package:plinko_flame_game/utils/screen_size.dart';
 class PlinkoGame extends Forge2DGame {
   final rowCount = 8;
   final List<double> multipliers = [10.0, 2.5, 1.2, .8, 0.5, 1.2, 2.5, 10.0];
+  final List<Color> colors = [
+    Colors.green,
+    Colors.lightGreen,
+    Colors.orange,
+    Colors.red,
+    Colors.red,
+    Colors.orange,
+    Colors.lightGreen,
+    Colors.green,
+  ];
 
   PlinkoGame() : super(gravity: Vector2(0, 500));
 
@@ -69,11 +81,18 @@ class PlinkoGame extends Forge2DGame {
     for (int i = 0; i < rowCount; i++) {
       final sensorPositionX =
           startX + i * (sensorWidth + PlinkoConfigs.sensorGap);
-      add(Sensor(sensorPositionX: sensorPositionX, multiplier: multipliers[i]));
+      add(
+        Sensor(
+          sensorPositionX: sensorPositionX,
+          multiplier: multipliers[i],
+          color: colors[i],
+        ),
+      );
     }
   }
 
-  void dropBall() {
+  void dropBall({required int betAmount}) {
+    plinkoBloc.add(PlinkoBetEvent(betAmount: betAmount));
     final random = (Random().nextDouble() - 0.5) * 100.w();
     final Ball ball = Ball(ballPositionX: PlinkoConfigs.gameWidth / 2 + random);
     add(ball);
